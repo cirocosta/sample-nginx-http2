@@ -1,3 +1,5 @@
+NGINX_BIN := /usr/local/nginx/sbin/nginx
+
 build:
 	go build -i -v -o sample
 
@@ -9,6 +11,9 @@ run: build
 		-port=443 \
 		-key=./certs/key_example.com.pem \
 		-cert=./certs/cert_example.com.pem
+
+run-nginx:
+	$(NGINX_BIN) -p $(shell pwd)/ -c nginx.cfg
 
 open-chrome:
 	SSLKEYLOGFILE=~/tlskey.log \
