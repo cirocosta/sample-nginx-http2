@@ -1,5 +1,5 @@
 build:
-	go build -i -v
+	go build -i -v -o sample
 
 fmt:
 	go fmt
