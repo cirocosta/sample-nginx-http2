@@ -7,10 +7,15 @@ fmt:
 	go fmt
 
 run: build
-	sudo ./sample-nginx-http2 \
+	sudo ./sample \
+		-http2 \
 		-port=443 \
 		-key=./certs/key_example.com.pem \
 		-cert=./certs/cert_example.com.pem
+
+run-http1: build
+	./sample -http2=false -port=8080
+
 
 run-nginx:
 	$(NGINX_BIN) -p $(shell pwd)/ -c nginx.cfg

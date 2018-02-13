@@ -41,7 +41,7 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 			must(pusher.Push("/image.svg", nil))
 		}
 	} else {
-		w.Header().Add("Link", "/image.svg; rel=preload; as=image")
+		w.Header().Add("Link", "</proxy/image.svg>; rel=preload; as=image")
 	}
 
 	w.Header().Add("Content-Type", "text/html")
