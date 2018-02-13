@@ -32,6 +32,12 @@ func must(err error) {
 // that at the same moment  that the browser is fetching
 // `index.html` it can also start retrieving `image.svg`
 // (even before it knows about the existence in the html).
+//
+// In the case of HTTP1.1 we make use of the `Link` header
+// to indicate that the client (in our case, NGINX) should
+// retrieve a certain URL.
+//
+// See more at https://www.w3.org/TR/preload/#server-push-http-2.
 func handleIndex(w http.ResponseWriter, r *http.Request) {
 	var err error
 
