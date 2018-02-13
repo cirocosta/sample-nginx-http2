@@ -11,9 +11,10 @@ import (
 )
 
 var (
-	port = flag.Int("port", 8443, "port to listen to")
-	cert = flag.String("cert", "", "certificate for TLS")
-	key  = flag.String("key", "", "key for TLS")
+	port  = flag.Int("port", 8443, "port to listen to")
+	http2 = flag.Bool("http2", true, "whether to use http2 or not")
+	cert  = flag.String("cert", "", "certificate for TLS")
+	key   = flag.String("key", "", "key for TLS")
 )
 
 func must(err error) {
@@ -34,9 +35,13 @@ func must(err error) {
 func handleIndex(w http.ResponseWriter, r *http.Request) {
 	var err error
 
-	pusher, ok := w.(http.Pusher)
-	if ok {
-		must(pusher.Push("/image.svg", nil))
+	if *http2 {
+		pusher, ok := w.(http.Pusher)
+		if ok {
+			must(pusher.Push("/image.svg", nil))
+		}
+	} else {
+		w.Header().Add("Link", "/image.svg; rel=preload; as=image")
 	}
 
 	w.Header().Add("Content-Type", "text/html")
@@ -69,18 +74,25 @@ func handleImage(w http.ResponseWriter, r *http.Request) {
 func main() {
 	flag.Parse()
 
-	if *key == "" {
-		fmt.Println("flag: key must be specified")
-		os.Exit(1)
-	}
-
-	if *cert == "" {
-		fmt.Println("flag: cert must be specified")
-		os.Exit(1)
-	}
-
 	http.HandleFunc("/", handleIndex)
 	http.HandleFunc("/image.svg", handleImage)
 
-	must(http.ListenAndServeTLS(":"+strconv.Itoa(*port), *cert, *key, nil))
+	if *http2 {
+		if *key == "" {
+			fmt.Println("flag: key must be specified")
+			os.Exit(1)
+		}
+
+		if *cert == "" {
+			fmt.Println("flag: cert must be specified")
+			os.Exit(1)
+		}
+
+		fmt.Printf("Server HTTP2 on :%d\n", *port)
+		must(http.ListenAndServeTLS(":"+strconv.Itoa(*port), *cert, *key, nil))
+		return
+	}
+
+	fmt.Printf("Server HTTP1.1 on :%d\n", *port)
+	must(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
 }
